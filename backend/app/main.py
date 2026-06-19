@@ -9,7 +9,6 @@ from app.api.endpoints import auth, datasets, analytics, dashboards, reports
 
 import logging
 
-# Configure production-safe logger
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
