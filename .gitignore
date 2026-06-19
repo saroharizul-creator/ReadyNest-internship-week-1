@@ -1,0 +1,25 @@
+# Python caches and virtual environments
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.virtual_documents/
+
+# Backend configurations and local SQLite database
+backend/.env
+backend/dataset_analysis.db
+
+# Large uploaded/processed datasets
+backend/app/uploads/*
+!backend/app/uploads/.gitkeep
+
+# Frontend build outputs and dependencies
+frontend/node_modules/
+frontend/dist/
+frontend/*.local
+
+# Editor and system settings
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db
