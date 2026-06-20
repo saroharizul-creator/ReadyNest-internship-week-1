@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = Field(default="sqlite:///./dataset_analysis.db")
     
     # JWT Settings - secrets must be loaded from environment in production
-    SECRET_KEY: str = Field(default=None)
+    SECRET_KEY: str | None = Field(default=None)
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
