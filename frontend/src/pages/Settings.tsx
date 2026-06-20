@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAppSelector } from '../store';
 import { Shield, Server } from 'lucide-react';
+import api from '../utils/api';
 
 const Settings: React.FC = () => {
   const { user } = useAppSelector((state) => state.auth);
@@ -38,11 +39,11 @@ const Settings: React.FC = () => {
           <div className="space-y-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">API Connection</p>
-              <p className="text-sm text-green-600 font-semibold mt-1">Connected: http://127.0.0.1:8000/api</p>
+              <p className="text-sm text-green-600 font-semibold mt-1">Connected: {api.defaults.baseURL}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Database Engine</p>
-              <p className="text-sm text-slate-700 mt-1">MySQL 8.0</p>
+              <p className="text-sm text-slate-700 mt-1">PostgreSQL / SQLite</p>
             </div>
           </div>
         </div>
