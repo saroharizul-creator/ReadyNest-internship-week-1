@@ -1,13 +1,15 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 import uvicorn
+import logging
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.core.database import engine, Base
+from app.core.database import engine, Base, get_db
 from app.api.endpoints import auth, datasets, analytics, dashboards, reports
-
-
-import logging
 
 logging.basicConfig(
     level=logging.INFO,
@@ -15,31 +17,27 @@ logging.basicConfig(
 )
 logger = logging.getLogger("backend")
 
-try:
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database tables initialized successfully.")
-except Exception as e:
-    logger.warning("Warning: Could not automatically initialize database tables: %s", str(e))
-    logger.warning("Ensure that your MySQL server is running and database_url is correct in .env")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Initializing database tables on startup...")
+    try:
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database tables initialized successfully.")
+    except Exception as e:
+        logger.error("Error during startup database initialization: %s", str(e))
+    yield
 
 app = FastAPI(
     title="Data Analytics & Reporting Platform API",
     description="Backend API for uploading, cleaning, and analyzing business datasets.",
     version="1.0.0",
-    debug=settings.DEBUG
+    debug=settings.DEBUG,
+    lifespan=lifespan
 )
-
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000"
-    ],
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,5 +56,19 @@ def read_root():
         "docs_url": "/docs"
     }
 
+@app.get("/health")
+def health_check(db: Session = Depends(get_db)):
+    try:
+        # Check database connectivity
+        db.execute(text("SELECT 1"))
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        logger.error("Health check failed - database disconnected: %s", str(e))
+        return JSONResponse(
+            status_code=503,
+            content={"status": "unhealthy", "database": "disconnected", "detail": str(e)}
+        )
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host=settings.HOST, port=settings.PORT, reload=settings.DEBUG)
+
